@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="QuarkusDeploymentProjectService">
+    <option name="modules">
+      <map>
+        <entry key="eventbus.main">
+          <value>
+            <ModuleState>
+              <option name="hash" value="1480943620" />
+              <option name="version" value="1" />
+            </ModuleState>
+          </value>
+        </entry>
+        <entry key="readside.main">
+          <value>
+            <ModuleState>
+              <option name="hash" value="1967854341" />
+              <option name="version" value="1" />
+            </ModuleState>
+          </value>
+        </entry>
+        <entry key="writeside.main">
+          <value>
+            <ModuleState>
+              <option name="hash" value="1967854341" />
+              <option name="version" value="1" />
+            </ModuleState>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

@@ -1,0 +1,117 @@
+services:
+  writeside:
+    image: gradle:9.1.0-jdk25
+    restart: no
+    ports:
+      - "9100:8080"
+      - "5007:5005"
+    depends_on:
+      - writedb
+    volumes:
+      - ./writeside/:/home/gradle/project
+      - lab-cqrs-writeside-gradle-cache:/home/gradle/.gradle
+    working_dir: "/home/gradle/project"
+    command: [ "gradle", "quarkusDev", "-DdebugHost=0.0.0.0", "-Dquarkus.debug.enabled=true", "-Dquarkus.debug.port=5005" ]
+    environment:
+      - "JAVA_DEBUG_PORT='5005"
+      - "JAVA_DEBUG=true"
+      - "QUARKUS_HTTP_HOST=0.0.0.0"
+      - "QUARKUS_DEVSERVICES_ENABLED=false"
+      - "QUARKUS_DATASOURCE_USERNAME=writeside_admin"
+      - "QUARKUS_DATASOURCE_PASSWORD=password"
+      - "QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://writedb:5432/default"
+
+  readside:
+    image: gradle:9.1.0-jdk25
+    restart: no
+    ports:
+      - "9200:8080"
+      - "5008:5005"
+    depends_on:
+      - readdb
+    volumes:
+      - ./readside/:/home/gradle/project
+      - lab-cqrs-readside-gradle-cache:/home/gradle/.gradle
+    working_dir: "/home/gradle/project"
+    command: [ "gradle", "quarkusDev", "-DdebugHost=0.0.0.0", "-Dquarkus.debug.enabled=true", "-Dquarkus.debug.port=5005" ]
+    environment:
+      - "JAVA_DEBUG_PORT='5005"
+      - "JAVA_DEBUG=true"
+      - "QUARKUS_HTTP_HOST=0.0.0.0"
+      - "QUARKUS_DEVSERVICES_ENABLED=false"
+      - "QUARKUS_DATASOURCE_USERNAME=readside_admin"
+      - "QUARKUS_DATASOURCE_PASSWORD=password"
+      - "QUARKUS_DATASOURCE_JDBC_URL=jdbc:postgresql://readdb:5432/default"
+
+  eventbus:
+    image: gradle:9.1.0-jdk25
+    restart: no
+    ports:
+      - "9000:8080"
+      - "5006:5005"
+    depends_on:
+      - eventdb
+    volumes:
+      - ./eventbus/:/home/gradle/project
+      - lab-cqrs-eventbus-gradle-cache:/home/gradle/.gradle
+    working_dir: "/home/gradle/project"
+    command: [ "gradle", "quarkusDev", "-DdebugHost=0.0.0.0", "-Dquarkus.debug.enabled=true", "-Dquarkus.debug.port=5005" ]
+    environment:
+      - "JAVA_DEBUG_PORT='5005"
+      - "JAVA_DEBUG=true"
+      - "QUARKUS_HTTP_HOST=0.0.0.0"
+
+  readdb:
+    image: postgres:18
+    ports:
+      - "9210:5432"
+    restart: no
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "default", "-U", "readside_admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: readside_admin
+      POSTGRES_DB: default
+
+  writedb:
+    image: postgres:18
+    ports:
+      - "9110:5432"
+    restart: no
+    healthcheck:
+      test: ["CMD", "pg_isready", "-d", "default", "-U", "writeside_admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_USER: writeside_admin
+      POSTGRES_DB: default
+
+
+  eventdb:
+    # user is "admin", password is "changeit" (not needed, as insecure mode does not need authentication);
+    # changing default password or enabling authentication would require insecure-mode=off; but then TLS has to be configured.
+    image: docker.kurrent.io/kurrent-latest/kurrentdb:latest
+    environment:
+      - KURRENTDB_CLUSTER_SIZE=1
+      - KURRENTDB_RUN_PROJECTIONS=All
+      - KURRENTDB_START_STANDARD_PROJECTIONS=true
+      - KURRENTDB_NODE_PORT=2113
+      - KURRENTDB_INSECURE=true
+      - KURRENTDB_ENABLE_ATOM_PUB_OVER_HTTP=true
+    ports:
+      - "9010:2113"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl --fail --insecure http://eventdb:2113/health/live || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  lab-cqrs-readside-gradle-cache:
+  lab-cqrs-writeside-gradle-cache:
+  lab-cqrs-eventbus-gradle-cache:

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="eventbus" options="-parameters" />
+      <module name="eventbus.integrationTest" options="-parameters" />
+      <module name="eventbus.main" options="-parameters" />
+      <module name="eventbus.native-test" options="-parameters" />
+      <module name="eventbus.quarkus-generated-sources" options="-parameters" />
+      <module name="eventbus.quarkus-test-generated-sources" options="-parameters" />
+      <module name="eventbus.test" options="-parameters" />
+      <module name="readside" options="-parameters" />
+      <module name="readside.integrationTest" options="-parameters" />
+      <module name="readside.main" options="-parameters" />
+      <module name="readside.native-test" options="-parameters" />
+      <module name="readside.quarkus-generated-sources" options="-parameters" />
+      <module name="readside.quarkus-test-generated-sources" options="-parameters" />
+      <module name="readside.test" options="-parameters" />
+      <module name="writeside" options="-parameters" />
+      <module name="writeside.integrationTest" options="-parameters" />
+      <module name="writeside.main" options="-parameters" />
+      <module name="writeside.native-test" options="-parameters" />
+      <module name="writeside.quarkus-generated-sources" options="-parameters" />
+      <module name="writeside.quarkus-test-generated-sources" options="-parameters" />
+      <module name="writeside.test" options="-parameters" />
+    </option>
+  </component>
+</project>
