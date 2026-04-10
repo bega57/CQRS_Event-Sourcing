@@ -5,7 +5,7 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$/eventbus" />
-        <option name="gradleJvm" value="#JAVA_HOME" />
+        <option name="gradleHome" value="$PROJECT_DIR$/../../../../../../../../../Program Files/Gradle/gradle-9.4.1-bin/gradle-9.4.1" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/eventbus" />
@@ -14,7 +14,7 @@
       </GradleProjectSettings>
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$/readside" />
-        <option name="gradleJvm" value="#JAVA_HOME" />
+        <option name="gradleHome" value="$PROJECT_DIR$/../../../../../../../../../Program Files/Gradle/gradle-9.4.1-bin/gradle-9.4.1" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/readside" />
@@ -23,7 +23,7 @@
       </GradleProjectSettings>
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$/writeside" />
-        <option name="gradleJvm" value="#JAVA_HOME" />
+        <option name="gradleHome" value="$PROJECT_DIR$/../../../../../../../../../Program Files/Gradle/gradle-9.4.1-bin/gradle-9.4.1" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$/writeside" />
