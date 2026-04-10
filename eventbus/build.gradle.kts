@@ -23,14 +23,15 @@ dependencies {
     implementation("io.kurrent:kurrentdb-client:1.1.2")
     testImplementation("io.quarkus:quarkus-junit")
     testImplementation("io.rest-assured:rest-assured")
+    implementation("com.eventstore:db-client-java:5.4.0")
 }
 
 group = "at.fhv.se.systemarchitectures.cqrs"
 version = "1.0.0-SNAPSHOT"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
 }
 
 tasks.withType<JavaCompile> {
