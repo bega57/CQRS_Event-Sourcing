@@ -48,4 +48,11 @@ public class RoleController {
                              RoleAssignmentRequest request) {
         roleService.assignRole(parentId, request.childRoleId);
     }
+
+    @DELETE
+    @Path("/{id}/children/{childId}")
+    public void removeChildRole(@PathParam("id") String parentId,
+                                @PathParam("childId") String childId) {
+        roleService.removeChildRole(parentId, childId);
+    }
 }
