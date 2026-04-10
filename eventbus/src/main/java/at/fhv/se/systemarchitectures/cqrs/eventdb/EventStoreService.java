@@ -10,9 +10,9 @@ public class EventStoreService {
 
     public EventStoreService() {
         EventStoreDBClientSettings settings =
-                EventStoreDBClientSettings.builder()
-                        .addHost("eventstore", 2113)
-                        .buildConnectionSettings();
+                EventStoreDBConnectionString.parseOrThrow(
+                        "esdb://eventdb:2113?tls=false"
+                );
 
         this.client = EventStoreDBClient.create(settings);
     }
