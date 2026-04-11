@@ -23,4 +23,8 @@ public class Role {
     public void addPermission(String permission) {
         permissions.add(permission);
     }
+
+    public void removePermission(String permission) {
+        permissions.remove(permission);
+    }
 }

@@ -1,6 +1,7 @@
 package at.fhv.se.systemarchitectures.cqrs.application;
 
 import at.fhv.se.systemarchitectures.cqrs.application.event.*;
+import at.fhv.se.systemarchitectures.cqrs.domain.Role;
 import at.fhv.se.systemarchitectures.cqrs.infrastructure.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -28,6 +29,26 @@ public class RoleService {
     @Inject
     @RestClient
     EventBusClient eventBusClient;
+
+    private Role loadRole(String roleId) {
+
+        RoleEntity entity = roleRepository.findById(roleId);
+
+        if (entity == null) {
+            throw new WebApplicationException("Role not found", 404);
+        }
+
+        Role role = new Role(roleId);
+
+        List<PermissionEntity> permissions =
+                permissionRepository.find("roleId", roleId).list();
+
+        for (PermissionEntity p : permissions) {
+            role.addPermission(p.permission);
+        }
+
+        return role;
+    }
 
     @Transactional
     public void createRole(String id) {
@@ -78,6 +99,10 @@ public class RoleService {
             throw new WebApplicationException("Permission already exists", 409);
         }
 
+        Role role = loadRole(roleId);
+
+        role.addPermission(permission);
+
         PermissionEntity entity = new PermissionEntity();
         entity.roleId = roleId;
         entity.permission = permission;
@@ -93,6 +118,10 @@ public class RoleService {
     public void removePermission(String roleId, String permission) {
 
         ensureRoleExists(roleId);
+
+        Role role = loadRole(roleId);
+
+        role.removePermission(permission);
 
         long deleted = permissionRepository.delete(
                 "roleId = ?1 and permission = ?2",
