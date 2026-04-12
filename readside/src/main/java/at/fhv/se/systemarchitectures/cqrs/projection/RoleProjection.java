@@ -1,7 +1,7 @@
 package at.fhv.se.systemarchitectures.cqrs.projection;
 
-import at.fhv.se.systemarchitectures.cqrs.readmodel.RoleEntity;
-import at.fhv.se.systemarchitectures.cqrs.readmodel.RoleRepository;
+import at.fhv.se.systemarchitectures.cqrs.infrastructure.RolePermissionRepository;
+import at.fhv.se.systemarchitectures.cqrs.readmodel.RolePermissionEntity;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -10,33 +10,103 @@ import jakarta.transaction.Transactional;
 public class RoleProjection {
 
     @Inject
-    RoleRepository repository;
+    RolePermissionRepository repository;
 
     @Transactional
     public void handle(String event) {
-        try {
-            if (!event.contains("id")) {
-                System.out.println("Invalid event: " + event);
-                return;
-            }
 
-            String id = event.replaceAll(".*\"id\":\"(.*?)\".*", "$1");
+        String eventType = event.replaceAll(".*\"eventType\":\"(.*?)\".*", "$1");
 
-            if (repository.findById(id) == null) {
+        switch (eventType) {
 
-                RoleEntity role = new RoleEntity();
-                role.id = id;
+            case "PermissionAddedEvent":
+                handlePermissionAdded(event);
+                break;
 
-                repository.persist(role);
+            case "PermissionRemovedEvent":
+                handlePermissionRemoved(event);
+                break;
 
-                System.out.println("Saved to ReadDB: " + id);
+            case "RoleAssignedEvent":
+                handleRoleAssigned(event);
+                break;
 
-            } else {
-                System.out.println("Role already exists: " + id);
-            }
+            case "RoleUnassignedEvent":
+                handleRoleUnassigned(event);
+                break;
 
-        } catch (Exception e) {
-            e.printStackTrace();
+            case "RoleDeletedEvent":
+                handleRoleDeleted(event);
+                break;
+
+            default:
+                System.out.println("Unhandled event: " + eventType);
         }
+    }
+
+    private void handlePermissionAdded(String event) {
+
+        String roleId = event.replaceAll(".*\"roleId\":\"(.*?)\".*", "$1");
+        String permission = event.replaceAll(".*\"permission\":\"(.*?)\".*", "$1");
+
+        String id = roleId + "_" + permission;
+
+        if (repository.find("id", id).firstResult() != null) return;
+
+        RolePermissionEntity entry = new RolePermissionEntity();
+        entry.id = id;
+        entry.roleId = roleId;
+        entry.permission = permission;
+
+        repository.persist(entry);
+    }
+
+    private void handlePermissionRemoved(String event) {
+
+        String roleId = event.replaceAll(".*\"roleId\":\"(.*?)\".*", "$1");
+        String permission = event.replaceAll(".*\"permission\":\"(.*?)\".*", "$1");
+
+        repository.delete(roleId + "_" + permission);
+    }
+
+    private void handleRoleAssigned(String event) {
+
+        String parent = event.split("\"parentRoleId\":\"")[1].split("\"")[0];
+        String child = event.split("\"childRoleId\":\"")[1].split("\"")[0];
+
+        var childPermissions = repository.findByRoleId(child);
+
+        for (var perm : childPermissions) {
+
+            String id = parent + "_" + perm.permission;
+
+            if (repository.find("id", id).firstResult() != null) continue;
+
+            RolePermissionEntity entry = new RolePermissionEntity();
+            entry.id = id;
+            entry.roleId = parent;
+            entry.permission = perm.permission;
+
+            repository.persist(entry);
+        }
+    }
+
+    private void handleRoleUnassigned(String event) {
+
+        String parent = event.split("\"parentRoleId\":\"")[1].split("\"")[0];
+        String child = event.split("\"childRoleId\":\"")[1].split("\"")[0];
+
+        var childPermissions = repository.findByRoleId(child);
+
+        for (var perm : childPermissions) {
+            repository.delete(parent + "_" + perm.permission);
+        }
+    }
+
+    private void handleRoleDeleted(String event) {
+
+        String roleId = event.replaceAll(".*\"roleId\":\"(.*?)\".*", "$1");
+
+        repository.delete("roleId", roleId);
     }
 }
