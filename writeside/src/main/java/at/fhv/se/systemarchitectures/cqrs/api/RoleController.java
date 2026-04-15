@@ -9,6 +9,7 @@ import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Path("/roles")
 @Consumes(MediaType.APPLICATION_JSON)
@@ -19,8 +20,16 @@ public class RoleController {
     RoleService roleService;
 
     @POST
-    public void createRole(RoleRequest request) {
-        roleService.createRole(request.id);
+    public Response createRole(RoleRequest request) {
+        try {
+            roleService.createRole(request.id);
+            return Response.ok("Role created").build();
+
+        } catch (WebApplicationException e) {
+            return Response.status(e.getResponse().getStatus())
+                    .entity(e.getMessage())
+                    .build();
+        }
     }
 
     @DELETE
@@ -54,5 +63,10 @@ public class RoleController {
     public void removeChildRole(@PathParam("id") String parentId,
                                 @PathParam("childId") String childId) {
         roleService.removeChildRole(parentId, childId);
+    }
+
+    @OPTIONS
+    @Path("/{any: .*}")
+    public void corsPreflight() {
     }
 }

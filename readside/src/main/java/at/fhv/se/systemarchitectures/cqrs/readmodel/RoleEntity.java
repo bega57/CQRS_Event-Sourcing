@@ -9,4 +9,8 @@ public class RoleEntity extends PanacheEntityBase {
 
     @Id
     public String id;
+
+    public String roleId;
+    public String permission;
+
 }

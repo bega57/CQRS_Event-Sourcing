@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CQRS Role Manager</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f6f7fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+        }
+
+        input {
+            padding: 10px;
+            margin: 5px 0;
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        button {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #6c63ff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        pre {
+            background: #111;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 10px;
+            height: 200px;
+            overflow: auto;
+        }
+
+        #message {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            min-width: 250px;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: bold;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease;
+            z-index: 999;
+        }
+
+        #message.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .success {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .error {
+            background: #ff4d4d;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>CQRS Role Manager</h1>
+    <div id="message"></div>
+
+    <div class="grid">
+
+        <!-- LEFT SIDE = COMMANDS -->
+        <div class="column">
+
+            <div class="card">
+                <b>Create Role</b>
+                <input id="roleId" placeholder="Role name">
+                <button onclick="createRole()">Create</button>
+            </div>
+
+            <div class="card">
+                <b>Add Permission</b>
+                <input id="permRoleId" placeholder="Role name">
+                <input id="permission" placeholder="read / write">
+                <button onclick="addPermission()">Add</button>
+            </div>
+
+            <div class="card">
+                <b>Assign Role</b>
+                <input id="parentRole" placeholder="Parent role">
+                <input id="childRole" placeholder="Child role">
+                <button onclick="assignRole()">Assign</button>
+            </div>
+
+        </div>
+
+        <!-- RIGHT SIDE = QUERIES -->
+        <div class="column">
+
+            <div class="card">
+                <b>Check Permissions</b>
+                <input id="checkRole" placeholder="Role name">
+                <button onclick="checkPermissions()">Check</button>
+            </div>
+
+            <div class="card">
+                <b>All Roles (Readside)</b>
+                <button onclick="loadRoles()">Load</button>
+                <pre id="output">Output...</pre>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+
+    const WRITE_URL = "http://localhost:9100";
+    const READ_URL = "http://localhost:9200";
+
+    async function createRole() {
+        const id = document.getElementById("roleId").value;
+
+        const res = await fetch(`${WRITE_URL}/roles`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ id })
+        });
+
+        handleResponse(res, "Role created");
+    }
+
+    async function addPermission() {
+        const roleId = document.getElementById("permRoleId").value;
+        const permission = document.getElementById("permission").value;
+
+        const res = await fetch(`${WRITE_URL}/roles/${roleId}/permissions`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ permission })
+        });
+
+        handleResponse(res, "Permission added");
+    }
+
+    async function assignRole() {
+        const parent = document.getElementById("parentRole").value;
+        const child = document.getElementById("childRole").value;
+
+        const res = await fetch(`${WRITE_URL}/roles/${parent}/children`, {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ childRoleId: child })
+        });
+
+        handleResponse(res, "Role assigned");
+    }
+
+    async function loadRoles() {
+        const res = await fetch(`${READ_URL}/roles`);
+        const data = await res.json();
+
+        document.getElementById("output").innerText =
+            JSON.stringify(data, null, 2);
+    }
+
+    async function checkPermissions() {
+        const role = document.getElementById("checkRole").value;
+
+        const res = await fetch(`${READ_URL}/roles/${role}/permissions`);
+        const data = await res.json();
+
+        document.getElementById("output").innerText =
+            JSON.stringify(data, null, 2);
+    }
+
+    function showMessage(text, type) {
+        const box = document.getElementById("message");
+        box.innerText = text;
+        box.className = type + " show";
+
+        setTimeout(() => {
+            box.classList.remove("show");
+        }, 3000);
+    }
+
+    async function handleResponse(res, successMsg) {
+        if (res.ok) {
+            showMessage(successMsg, "success");
+        } else {
+            let text = await res.text();
+
+            if (!text || text.trim() === "") {
+                text = `Request failed (${res.status})`;
+            }
+
+            showMessage(text, "error");
+        }
+    }
+
+</script>
+
+</body>
+</html>

@@ -2,8 +2,11 @@ package at.fhv.se.systemarchitectures.cqrs.api;
 
 import at.fhv.se.systemarchitectures.cqrs.eventdb.EventStoreService;
 import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
 import java.util.ArrayList;
@@ -22,7 +25,9 @@ public class EventResource {
 
     @POST
     @Path("/subscribe")
+    @Consumes(MediaType.TEXT_PLAIN)
     public Response subscribe(String callbackUrl) {
+        System.out.println("Subscriber added: " + callbackUrl);
         if (!subscribers.contains(callbackUrl)) {
             subscribers.add(callbackUrl);
         }
@@ -34,11 +39,14 @@ public class EventResource {
         System.out.println("EVENT BUS RECEIVED: " + event);
 
         try {
+            String eventType = event.replaceAll(".*\"eventType\":\"(.*?)\".*", "$1");
+
             eventStore.appendEvent(
                     "roles-stream",
-                    "RoleCreatedEvent",
+                    eventType,
                     event);
 
+            System.out.println("Subscribers: " + subscribers);
             for (String subscriber : subscribers) {
                 sendEventToSubscriber(subscriber, event);
             }
@@ -71,5 +79,10 @@ public class EventResource {
             System.out.println("Failed to send to: " + subscriberUrl);
             e.printStackTrace();
         }
+    }
+
+    @GET
+    public List<String> getAllEvents() {
+        return eventStore.getAllEvents();
     }
 }
