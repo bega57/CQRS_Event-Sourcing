@@ -49,6 +49,8 @@ public class EventStoreService {
             e.printStackTrace();
         }
 
+        System.out.println("No events yet (stream not created)");
+
         return events;
     }
 }
