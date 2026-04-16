@@ -18,7 +18,7 @@ public class RoleProjection {
     @Inject
     RoleRelationRepository relationRepo;
 
-    @ConfigProperty(name = "filter.prefix")
+    @ConfigProperty(name = "filter.prefix", defaultValue = "")
     String prefix;
 
     @Transactional
@@ -32,6 +32,7 @@ public class RoleProjection {
 
         if (id != null && prefix != null && !prefix.isBlank()) {
             if (!id.toLowerCase().startsWith(prefix.toLowerCase())) {
+                System.out.println("Filtered event for id: " + id);
                 return;
             }
         }
